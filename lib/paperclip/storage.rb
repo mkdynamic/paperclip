@@ -190,7 +190,9 @@ module Paperclip
       def to_file style = default_style
         return @queued_for_write[style] if @queued_for_write[style]
         file = Tempfile.new(path(style))
-        file.write(AWS::S3::S3Object.value(path(style), bucket_name))
+        AWS::S3::S3Object.stream(path(style), bucket_name) do |chunk|
+          file.write chunk
+        end
         file.rewind
         return file
       end
